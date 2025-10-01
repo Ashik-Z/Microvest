@@ -1,11 +1,118 @@
+<!-- templates/index.html (updated for showcase) -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>MicroVest - Home</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Watchlist - Microvest</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h2>Welcome {{ session.username }}</h2>
-    <p>{{ msg }}</p>
-    <a href="/logout">Logout</a>
+    <header>
+        <h1>Stock Watchlist</h1>
+        <a href="{{ url_for('portfolio') }}">Portfolio</a> | 
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </header>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="messages">
+                    {% for category, message in messages %}
+                        <p class="message {{ category }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <h2>Popular Stocks Showcase</h2>
+        {% if popular_data %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Price</th>
+                        <th>Change</th>
+                        <th>Change %</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stock in popular_data %}
+                        <tr>
+                            <td>{{ stock.ticker }}</td>
+                            <td>${{ stock.price }}</td>
+                            <td class="{% if stock.change|float >= 0 %}positive{% else %}negative{% endif %}">
+                                {{ '+' if stock.change|float >= 0 else '' }}{{ stock.change }}
+                            </td>
+                            <td class="{% if stock.change_pct|float >= 0 %}positive{% else %}negative{% endif %}">
+                                {{ '+' if stock.change_pct|float >= 0 else '' }}{{ stock.change_pct }}%
+                            </td>
+                            <td>
+                                <form method="POST" action="{{ url_for('index') }}" style="display:inline;">
+                                    <input type="hidden" name="ticker" value="{{ stock.ticker }}">
+                                    <input type="hidden" name="action" value="add">
+                                    <button type="submit" class="btn-add">Add to Watchlist</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No popular stocks data available.</p>
+        {% endif %}
+
+        <h2>Add Custom Ticker</h2>
+        <form method="POST" action="{{ url_for('index') }}">
+            <div class="form-group">
+                <label for="ticker">Ticker</label>
+                <input type="text" id="ticker" name="ticker" required placeholder="e.g., AAPL">
+                <input type="hidden" name="action" value="add">
+                <button type="submit">Add to Watchlist</button>
+            </div>
+        </form>
+
+        <h2>Your Watchlist</h2>
+        {% if stock_data %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Price</th>
+                        <th>Change</th>
+                        <th>Change %</th>
+                        <th>High</th>
+                        <th>Low</th>
+                        <th>Volume</th>
+                        <th>Last Updated</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stock in stock_data %}
+                        <tr>
+                            <td>{{ stock.ticker }}</td>
+                            <td>${{ stock.price }}</td>
+                            <td class="{% if stock.change|float >= 0 %}positive{% else %}negative{% endif %}">
+                                {{ '+' if stock.change|float >= 0 else '' }}{{ stock.change }}
+                            </td>
+                            <td class="{% if stock.change_pct|float >= 0 %}positive{% else %}negative{% endif %}">
+                                {{ '+' if stock.change_pct|float >= 0 else '' }}{{ stock.change_pct }}%
+                            </td>
+                            <td>${{ stock.high }}</td>
+                            <td>${{ stock.low }}</td>
+                            <td>{{ stock.volume }}</td>
+                            <td>{{ stock.date_time }}</td>
+                            <td>
+                                <a href="{{ url_for('remove', ticker=stock.ticker) }}" class="btn-remove">Remove</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No stocks in your watchlist. Add some from the showcase or using the form above!</p>
+        {% endif %}
+    </div>
 </body>
 </html>

@@ -1,17 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Register</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Microvest</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h2>Register</h2>
-    <form method="post" action="/register">
-        <input type="text" name="username" placeholder="Enter Username" required><br>
-        <input type="password" name="password" placeholder="Enter Password" required><br>
-        <input type="email" name="email" placeholder="Enter Email" required><br>
-        <button type="submit">Register</button>
-    </form>
-    <p style="color:red;">{{ msg }}</p>
-    <a href="/login">Already have an account? Login</a>
+    <div class="container">
+        <h1>Register</h1>
+        <form method="POST" action="{{ url_for('register') }}">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required pattern="[A-Za-z0-9]+" title="Username must contain only letters and numbers">
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Register</button>
+        </form>
+        {% if msg %}
+            <p class="message {% if 'successfully' in msg %}success{% else %}error{% endif %}">{{ msg }}</p>
+        {% endif %}
+        <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+    </div>
 </body>
 </html>
