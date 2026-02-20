@@ -85,7 +85,7 @@ DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=
 DB_NAME=microvest
-SECRET_KEY=your-secret-key-here (use this to generate the secret code: python -c "import secrets; print(secrets.token_hex(32))")
+SECRET_KEY=your-secret-key-here (run in terminal to generate the secret code: python -c "import secrets; print(secrets.token_hex(32))")
 DEBUG=True
 ```
 
