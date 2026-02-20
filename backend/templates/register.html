@@ -1,33 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Microvest</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>Register</h1>
-        <form method="POST" action="{{ url_for('register') }}">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required pattern="[A-Za-z0-9]+" title="Username must contain only letters and numbers">
-            </div>
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <button type="submit">Register</button>
-        </form>
-        {% if msg %}
-            <p class="message {% if 'successfully' in msg %}success{% else %}error{% endif %}">{{ msg }}</p>
+{% extends "base.html" %}
+{% block title %}Register - Microvest{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-16">
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-xl">
+        <h1 class="text-2xl font-bold text-green-400 mb-6 text-center">Create Account</h1>
+
+        {% if error %}
+        <div class="bg-red-900/40 border border-red-700 text-red-300 rounded-lg px-4 py-3 mb-5 text-sm">
+            {{ error }}
+        </div>
         {% endif %}
-        <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+
+        <form method="POST" action="/register" class="space-y-4">
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Username</label>
+                <input type="text" name="username" required pattern="[A-Za-z0-9]+"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500 transition">
+            </div>
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Email</label>
+                <input type="email" name="email" required
+                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500 transition">
+            </div>
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Password</label>
+                <input type="password" name="password" required minlength="6"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500 transition">
+            </div>
+            <button type="submit"
+                class="w-full bg-green-500 hover:bg-green-400 text-black font-semibold py-2 rounded-lg transition mt-2">
+                Create Account
+            </button>
+        </form>
+
+        <p class="text-center text-gray-500 text-sm mt-6">
+            Already have an account?
+            <a href="/login" class="text-green-400 hover:underline">Login</a>
+        </p>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

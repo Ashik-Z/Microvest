@@ -1,5 +1,22 @@
-flask
-flask-mysqldb
-pymysql
-werkzeug
-yfinance
+# Framework
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+
+# Database
+sqlalchemy==2.0.36
+pymysql==1.1.1
+
+# Auth & Security
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+itsdangerous==2.2.0
+python-multipart==0.0.12
+
+# Templating
+jinja2==3.1.4
+
+# Configuration
+python-dotenv==1.0.1
+
+# Stock Data
+yfinance==1.2.0

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}Watchlist - Microvest{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="mb-8 flex items-center justify-between">
+    <div>
+        <h1 class="text-3xl font-bold text-white">Watchlist</h1>
+        <p class="text-gray-400 mt-1">Track your favourite stocks in real time.</p>
+    </div>
+</div>
+
+<!-- Add Custom Ticker -->
+<div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+    <h2 class="text-lg font-semibold text-white mb-4">Add a Ticker</h2>
+    <form method="POST" action="/watchlist/add" class="flex gap-3">
+        <input
+            type="text"
+            name="ticker"
+            required
+            placeholder="e.g. AAPL, TSLA, NVDA"
+            class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition uppercase"
+        >
+        <button type="submit"
+            class="bg-green-500 hover:bg-green-400 text-black font-semibold px-6 py-2 rounded-lg transition">
+            + Add
+        </button>
+    </form>
+</div>
+
+<!-- Your Watchlist -->
+<div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+    <h2 class="text-lg font-semibold text-white mb-4">
+        Your Watchlist
+        <span class="text-gray-500 text-sm font-normal ml-2">({{ stock_data | length }} stocks)</span>
+    </h2>
+
+    {% if stock_data %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-gray-400 border-b border-gray-800">
+                    <th class="text-left py-3 px-4">Symbol</th>
+                    <th class="text-left py-3 px-4">Name</th>
+                    <th class="text-right py-3 px-4">Price</th>
+                    <th class="text-right py-3 px-4">Change</th>
+                    <th class="text-right py-3 px-4">Change %</th>
+                    <th class="text-right py-3 px-4">High</th>
+                    <th class="text-right py-3 px-4">Low</th>
+                    <th class="text-right py-3 px-4">Volume</th>
+                    <th class="text-center py-3 px-4">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800">
+                {% for stock in stock_data %}
+                <tr class="hover:bg-gray-800/50 transition">
+                    <td class="py-3 px-4 font-bold text-white">{{ stock.ticker }}</td>
+                    <td class="py-3 px-4 text-gray-400">{{ stock.name }}</td>
+                    <td class="py-3 px-4 text-right text-white font-medium">${{ stock.price }}</td>
+                    <td class="py-3 px-4 text-right font-medium
+                        {% if stock.change >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                        {{ '+' if stock.change >= 0 else '' }}{{ stock.change }}
+                    </td>
+                    <td class="py-3 px-4 text-right font-medium
+                        {% if stock.change_pct >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                        {{ '+' if stock.change_pct >= 0 else '' }}{{ stock.change_pct }}%
+                    </td>
+                    <td class="py-3 px-4 text-right text-gray-300">${{ stock.high }}</td>
+                    <td class="py-3 px-4 text-right text-gray-300">${{ stock.low }}</td>
+                    <td class="py-3 px-4 text-right text-gray-400">{{ stock.volume }}</td>
+                    <td class="py-3 px-4 text-center">
+                        <form method="POST" action="/watchlist/remove">
+                            <input type="hidden" name="ticker" value="{{ stock.ticker }}">
+                            <button type="submit"
+                                class="text-red-400 hover:text-red-300 text-xs font-semibold transition">
+                                Remove
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-12 text-gray-500">
+        <p class="text-4xl mb-3">📭</p>
+        <p class="text-lg">Your watchlist is empty.</p>
+        <p class="text-sm mt-1">Add a ticker above or pick one from the popular stocks below.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Popular Stocks Showcase -->
+<div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+    <h2 class="text-lg font-semibold text-white mb-4">Popular Stocks</h2>
+
+    {% if popular_data %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-gray-400 border-b border-gray-800">
+                    <th class="text-left py-3 px-4">Symbol</th>
+                    <th class="text-left py-3 px-4">Name</th>
+                    <th class="text-right py-3 px-4">Price</th>
+                    <th class="text-right py-3 px-4">Change</th>
+                    <th class="text-right py-3 px-4">Change %</th>
+                    <th class="text-center py-3 px-4">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800">
+                {% for stock in popular_data %}
+                <tr class="hover:bg-gray-800/50 transition">
+                    <td class="py-3 px-4 font-bold text-white">{{ stock.ticker }}</td>
+                    <td class="py-3 px-4 text-gray-400">{{ stock.name }}</td>
+                    <td class="py-3 px-4 text-right text-white font-medium">${{ stock.price }}</td>
+                    <td class="py-3 px-4 text-right font-medium
+                        {% if stock.change >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                        {{ '+' if stock.change >= 0 else '' }}{{ stock.change }}
+                    </td>
+                    <td class="py-3 px-4 text-right font-medium
+                        {% if stock.change_pct >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                        {{ '+' if stock.change_pct >= 0 else '' }}{{ stock.change_pct }}%
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        {% if stock.ticker in watchlist_tickers %}
+                        <span class="text-green-400 text-xs font-semibold">✓ Added</span>
+                        {% else %}
+                        <form method="POST" action="/watchlist/add">
+                            <input type="hidden" name="ticker" value="{{ stock.ticker }}">
+                            <button type="submit"
+                                class="text-blue-400 hover:text-blue-300 text-xs font-semibold transition">
+                                + Add
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-gray-500 text-center py-6">Could not load popular stocks right now.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

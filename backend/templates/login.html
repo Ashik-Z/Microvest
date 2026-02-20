@@ -1,29 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Microvest</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>Login</h1>
-        <form method="POST" action="{{ url_for('login') }}">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <button type="submit">Login</button>
-        </form>
-        {% if msg %}
-            <p class="message error">{{ msg }}</p>
+{% extends "base.html" %}
+{% block title %}Login - Microvest{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-16">
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-xl">
+        <h1 class="text-2xl font-bold text-green-400 mb-6 text-center">Welcome Back</h1>
+
+        {% if error %}
+        <div class="bg-red-900/40 border border-red-700 text-red-300 rounded-lg px-4 py-3 mb-5 text-sm">
+            {{ error }}
+        </div>
         {% endif %}
-        <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+
+        <form method="POST" action="/login" class="space-y-4">
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Username</label>
+                <input type="text" name="username" required
+                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500 transition">
+            </div>
+            <div>
+                <label class="block text-sm text-gray-400 mb-1">Password</label>
+                <input type="password" name="password" required
+                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500 transition">
+            </div>
+            <button type="submit"
+                class="w-full bg-green-500 hover:bg-green-400 text-black font-semibold py-2 rounded-lg transition mt-2">
+                Login
+            </button>
+        </form>
+
+        <p class="text-center text-gray-500 text-sm mt-6">
+            Don't have an account?
+            <a href="/register" class="text-green-400 hover:underline">Register</a>
+        </p>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

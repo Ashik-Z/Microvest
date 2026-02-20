@@ -1,81 +1,188 @@
-<!-- templates/portfolio.html (new template) -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio - Microvest</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <header>
-        <h1>Portfolio</h1>
-        <a href="{{ url_for('index') }}">Watchlist</a> | 
-        <a href="{{ url_for('logout') }}">Logout</a>
-    </header>
-    <div class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="messages">
-                    {% for category, message in messages %}
-                        <p class="message {{ category }}">{{ message }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-        
-        <h2>Buy Stock</h2>
-        <form method="POST" action="{{ url_for('portfolio') }}">
-            <div class="form-group">
-                <label for="ticker">Ticker</label>
-                <input type="text" id="ticker" name="ticker" required placeholder="e.g., AAPL">
-            </div>
-            <div class="form-group">
-                <label for="qty">Quantity</label>
-                <input type="number" id="qty" name="qty" required min="1">
-            </div>
-            <button type="submit">Buy</button>
-        </form>
+{% extends "base.html" %}
+{% block title %}Portfolio - Microvest{% endblock %}
 
-        <h2>Your Holdings</h2>
-        {% if portfolio_data %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Ticker</th>
-                        <th>Quantity</th>
-                        <th>Buy Price</th>
-                        <th>Current Price</th>
-                        <th>P/L ($)</th>
-                        <th>P/L (%)</th>
-                        <th>Buy Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for holding in portfolio_data %}
-                        <tr>
-                            <td>{{ holding.ticker }}</td>
-                            <td>{{ holding.qty }}</td>
-                            <td>${{ holding.buy_price }}</td>
-                            <td>${{ holding.current_price }}</td>
-                            <td class="{% if holding.pl|float >= 0 %}positive{% else %}negative{% endif %}">
-                                {{ '+' if holding.pl|float >= 0 else '' }}{{ holding.pl }}
-                            </td>
-                            <td class="{% if holding.pl_pct|float >= 0 %}positive{% else %}negative{% endif %}">
-                                {{ '+' if holding.pl_pct|float >= 0 else '' }}{{ holding.pl_pct }}%
-                            </td>
-                            <td>{{ holding.buy_date }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <h3>Portfolio Summary</h3>
-            <p>Total Value: ${{ total_portfolio_value }}</p>
-            <p>Total P/L: <span class="{% if total_pl|float >= 0 %}positive{% else %}negative{% endif %}">{{ '+' if total_pl|float >= 0 else '' }}{{ total_pl }} ({{ total_pl_pct }}%)</span></p>
-            <p>Market (S&P 500) Change Today: <span class="{% if market_change_pct|float >= 0 %}positive{% else %}negative{% endif %}">{{ '+' if market_change_pct|float >= 0 else '' }}{{ market_change_pct }}%</span></p>
-        {% else %}
-            <p>No holdings in your portfolio yet. Buy some stocks using the form above!</p>
-        {% endif %}
+{% block content %}
+
+<!-- Page Header -->
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-white">Portfolio</h1>
+    <p class="text-gray-400 mt-1">Manage your holdings and track your performance.</p>
+</div>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <p class="text-gray-400 text-sm mb-1">Total Market Value</p>
+        <p class="text-2xl font-bold text-white">${{ total_value }}</p>
     </div>
-</body>
-</html>
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <p class="text-gray-400 text-sm mb-1">Total Invested</p>
+        <p class="text-2xl font-bold text-white">${{ total_cost }}</p>
+    </div>
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <p class="text-gray-400 text-sm mb-1">Total P&L</p>
+        <p class="text-2xl font-bold
+            {% if total_pnl >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+            {{ '+' if total_pnl >= 0 else '' }}${{ total_pnl }}
+            <span class="text-base font-normal">
+                ({{ '+' if total_pnl_pct >= 0 else '' }}{{ total_pnl_pct }}%)
+            </span>
+        </p>
+    </div>
+</div>
+
+<!-- Buy Stock Form -->
+<div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8" x-data="{ open: false }">
+    <div class="flex items-center justify-between cursor-pointer" @click="open = !open">
+        <h2 class="text-lg font-semibold text-white">Buy Stock</h2>
+        <span class="text-green-400 text-xl font-bold" x-text="open ? '−' : '+'"></span>
+    </div>
+    <div x-show="open" x-transition class="mt-4">
+        <form method="POST" action="/portfolio/buy" class="flex flex-wrap gap-3">
+            <input
+                type="text"
+                name="ticker"
+                required
+                placeholder="Ticker (e.g. AAPL)"
+                class="flex-1 min-w-[160px] bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition uppercase"
+            >
+            <input
+                type="number"
+                name="qty"
+                required
+                min="0.0001"
+                step="any"
+                placeholder="Quantity"
+                class="flex-1 min-w-[140px] bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition"
+            >
+            <button type="submit"
+                class="bg-green-500 hover:bg-green-400 text-black font-semibold px-6 py-2 rounded-lg transition">
+                Buy
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Holdings Table -->
+<div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+    <h2 class="text-lg font-semibold text-white mb-4">
+        Holdings
+        <span class="text-gray-500 text-sm font-normal ml-2">({{ positions | length }} positions)</span>
+    </h2>
+
+    {% if positions %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-gray-400 border-b border-gray-800">
+                    <th class="text-left py-3 px-4">Symbol</th>
+                    <th class="text-left py-3 px-4">Name</th>
+                    <th class="text-right py-3 px-4">Qty</th>
+                    <th class="text-right py-3 px-4">Avg Cost</th>
+                    <th class="text-right py-3 px-4">Current Price</th>
+                    <th class="text-right py-3 px-4">Market Value</th>
+                    <th class="text-right py-3 px-4">P&L</th>
+                    <th class="text-right py-3 px-4">P&L %</th>
+                    <th class="text-center py-3 px-4">Sell</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800">
+                {% for pos in positions %}
+                <tr class="hover:bg-gray-800/50 transition">
+                    <td class="py-3 px-4 font-bold text-white">{{ pos.ticker }}</td>
+                    <td class="py-3 px-4 text-gray-400">{{ pos.name }}</td>
+                    <td class="py-3 px-4 text-right text-white">{{ pos.qty }}</td>
+                    <td class="py-3 px-4 text-right text-gray-300">${{ pos.avg_cost }}</td>
+                    <td class="py-3 px-4 text-right text-white">${{ pos.current_price }}</td>
+                    <td class="py-3 px-4 text-right text-white font-medium">${{ pos.market_value }}</td>
+                    <td class="py-3 px-4 text-right font-medium
+                        {% if pos.pnl >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                        {{ '+' if pos.pnl >= 0 else '' }}${{ pos.pnl }}
+                    </td>
+                    <td class="py-3 px-4 text-right font-medium
+                        {% if pos.pnl_pct >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                        {{ '+' if pos.pnl_pct >= 0 else '' }}{{ pos.pnl_pct }}%
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <form method="POST" action="/portfolio/sell"
+                            x-data="{ qty: '' }" class="flex gap-2 justify-center">
+                            <input type="hidden" name="ticker" value="{{ pos.ticker }}">
+                            <input
+                                type="number"
+                                name="qty"
+                                required
+                                min="0.0001"
+                                max="{{ pos.qty }}"
+                                step="any"
+                                placeholder="Qty"
+                                class="w-20 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-red-500"
+                            >
+                            <button type="submit"
+                                class="text-red-400 hover:text-red-300 text-xs font-semibold transition">
+                                Sell
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-12 text-gray-500">
+        <p class="text-4xl mb-3">📂</p>
+        <p class="text-lg">No holdings yet.</p>
+        <p class="text-sm mt-1">Use the Buy Stock form above to add your first position.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Recent Transactions -->
+<div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+    <h2 class="text-lg font-semibold text-white mb-4">Recent Transactions</h2>
+
+    {% if recent_transactions %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-gray-400 border-b border-gray-800">
+                    <th class="text-left py-3 px-4">Type</th>
+                    <th class="text-left py-3 px-4">Symbol</th>
+                    <th class="text-right py-3 px-4">Qty</th>
+                    <th class="text-right py-3 px-4">Price</th>
+                    <th class="text-right py-3 px-4">Total</th>
+                    <th class="text-right py-3 px-4">Date</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800">
+                {% for t in recent_transactions %}
+                <tr class="hover:bg-gray-800/50 transition">
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 rounded text-xs font-bold
+                            {% if t.type.value == 'buy' %}bg-green-900/50 text-green-400
+                            {% else %}bg-red-900/50 text-red-400{% endif %}">
+                            {{ t.type.value | upper }}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 font-bold text-white">{{ t.ticker }}</td>
+                    <td class="py-3 px-4 text-right text-gray-300">{{ t.qty }}</td>
+                    <td class="py-3 px-4 text-right text-gray-300">${{ t.price }}</td>
+                    <td class="py-3 px-4 text-right text-white font-medium">
+                        ${{ (t.qty * t.price) | round(2) }}
+                    </td>
+                    <td class="py-3 px-4 text-right text-gray-400">
+                        {{ t.timestamp.strftime('%Y-%m-%d %H:%M') }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-gray-500">
+        <p>No transactions yet.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
