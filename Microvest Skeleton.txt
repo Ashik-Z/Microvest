@@ -1,0 +1,24 @@
+backend/
++-- main.py                    
++-- config.py                  
++-- database.py                
++-- models.py                  
++-- dependencies.py            
++-- routers/
+¦   +-- __init__.py            
+¦   +-- auth.py                
+¦   +-- watchlist.py           
+¦   +-- portfolio.py           
+¦   +-- dashboard.py           
++-- services/
+¦   +-- __init__.py            
+¦   +-- auth_service.py        
+¦   +-- stock_service.py       
++-- templates/
+¦   +-- base.html              
+¦   +-- login.html             
+¦   +-- register.html          
+¦   +-- dashboard.html         
+¦   +-- watchlist.html         
+¦   +-- portfolio.html         
++-- static/                     (empty for now)
