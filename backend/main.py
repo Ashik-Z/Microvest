@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse
 from backend.config import settings
 from backend.database import Base, engine
 from backend import models  # noqa: F401
-from backend.routers import auth, dashboard, watchlist, portfolio
+from backend.routers import auth, dashboard, watchlist, portfolio, inflation
 
 
 Base.metadata.create_all(bind=engine)
@@ -24,6 +24,7 @@ app.include_router(auth.router)
 app.include_router(dashboard.router)
 app.include_router(watchlist.router)
 app.include_router(portfolio.router)
+app.include_router(inflation.router)
 
 
 @app.get("/")

@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% block title %}Inflation Dashboard - Microvest{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-white">Inflation Dashboard</h1>
+    <p class="text-gray-400 mt-1">
+        Macro overview and real returns on your holdings.
+        Inflation baseline: <span class="text-yellow-400 font-semibold">{{ us_inflation }}% (US CPI)</span>
+    </p>
+</div>
+
+<!-- Section 1: Exchange Rates -->
+<div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+    <h2 class="text-lg font-semibold text-white mb-4">💱 USD Exchange Rates</h2>
+    {% if exchange_rates %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        {% for currency, rate in exchange_rates.items() %}
+        <div class="bg-gray-800 rounded-xl p-4 text-center">
+            <p class="text-gray-400 text-xs mb-1">1 USD →</p>
+            <p class="text-white font-bold text-lg">{{ rate }}</p>
+            <p class="text-green-400 text-xs font-semibold mt-1">{{ currency }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-500 text-sm">Could not load exchange rates right now.</p>
+    {% endif %}
+</div>
+
+<!-- Section 2: Inflation Rates by Country -->
+<div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+    <h2 class="text-lg font-semibold text-white mb-4">🌍 Inflation Rates by Country</h2>
+    {% if inflation_rates %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-gray-400 border-b border-gray-800">
+                    <th class="text-left py-3 px-4">Country</th>
+                    <th class="text-right py-3 px-4">Annual Inflation</th>
+                    <th class="text-right py-3 px-4">Year</th>
+                    <th class="text-right py-3 px-4">Purchasing Power Impact</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800">
+                {% for entry in inflation_rates %}
+                <tr class="hover:bg-gray-800/50 transition">
+                    <td class="py-3 px-4 font-medium text-white">{{ entry.country }}</td>
+                    <td class="py-3 px-4 text-right font-bold
+                        {% if entry.rate > 5 %}text-red-400
+                        {% elif entry.rate > 2 %}text-yellow-400
+                        {% else %}text-green-400{% endif %}">
+                        {{ entry.rate }}%
+                    </td>
+                    <td class="py-3 px-4 text-right text-gray-400">{{ entry.year }}</td>
+                    <td class="py-3 px-4 text-right text-gray-400 text-xs">
+                        $1000 → ${{ (1000 / (1 + entry.rate / 100)) | round(2) }} in real terms
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-gray-500 text-sm">Could not load inflation data right now.</p>
+    {% endif %}
+</div>
+
+<!-- Section 3: Commodity Prices -->
+<div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+    <h2 class="text-lg font-semibold text-white mb-4">🪙 Commodity Prices</h2>
+    {% if commodities %}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <!-- Gold -->
+        <div class="bg-gray-800 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <p class="text-yellow-400 font-bold text-lg">Gold</p>
+                    <p class="text-gray-400 text-xs">XAU/USD — Futures (GC=F)</p>
+                </div>
+                <span class="text-2xl">🥇</span>
+            </div>
+            <p class="text-white text-3xl font-bold">${{ commodities.gold.price }}</p>
+            <p class="text-sm mt-2 font-medium
+                {% if commodities.gold.change_pct >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                {{ '+' if commodities.gold.change_pct >= 0 else '' }}{{ commodities.gold.change_pct }}% today
+            </p>
+            <p class="text-gray-500 text-xs mt-2">Gold is a traditional inflation hedge — rising gold often signals inflation concerns.</p>
+        </div>
+        <!-- Oil -->
+        <div class="bg-gray-800 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <p class="text-orange-400 font-bold text-lg">Crude Oil</p>
+                    <p class="text-gray-400 text-xs">WTI — Futures (CL=F)</p>
+                </div>
+                <span class="text-2xl">🛢️</span>
+            </div>
+            <p class="text-white text-3xl font-bold">${{ commodities.oil.price }}</p>
+            <p class="text-sm mt-2 font-medium
+                {% if commodities.oil.change_pct >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                {{ '+' if commodities.oil.change_pct >= 0 else '' }}{{ commodities.oil.change_pct }}% today
+            </p>
+            <p class="text-gray-500 text-xs mt-2">Oil prices are a key driver of consumer inflation globally.</p>
+        </div>
+        <!-- Coal -->
+        <div class="bg-gray-800 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <p class="text-gray-400 font-bold text-lg">Coal</p>
+                    <p class="text-gray-400 text-xs">Global Coal — Futures (KOL=F)</p>
+                </div>
+                <span class="text-2xl">⚡</span>
+            </div>
+            <p class="text-white text-3xl font-bold">${{ commodities.coal.price }}</p>
+            <p class="text-sm mt-2 font-medium
+                {% if commodities.coal.change_pct >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                {{ '+' if commodities.coal.change_pct >= 0 else '' }}{{ commodities.coal.change_pct }}% today
+            </p>
+            <p class="text-gray-500 text-xs mt-2">Coal prices can impact inflation, especially in energy-intensive economies.</p>
+        </div>
+    </div>
+    {% else %}
+    <p class="text-gray-500 text-sm">Could not load commodity data right now.</p>
+    {% endif %}
+</div>
+
+<!-- Section 4: Real Returns — Watchlist -->
+<div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+    <h2 class="text-lg font-semibold text-white mb-1">📋 Watchlist — Real Returns</h2>
+    <p class="text-gray-500 text-xs mb-4">
+        Daily nominal return minus daily inflation equivalent ({{ us_inflation }}% annual ÷ 252 trading days).
+    </p>
+    {% if watchlist_real_returns %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-gray-400 border-b border-gray-800">
+                    <th class="text-left py-3 px-4">Symbol</th>
+                    <th class="text-left py-3 px-4">Name</th>
+                    <th class="text-right py-3 px-4">Today's Return</th>
+                    <th class="text-right py-3 px-4">Daily Inflation Cost</th>
+                    <th class="text-right py-3 px-4">Real Return</th>
+                    <th class="text-center py-3 px-4">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800">
+                {% for s in watchlist_real_returns %}
+                <tr class="hover:bg-gray-800/50 transition">
+                    <td class="py-3 px-4 font-bold text-white">{{ s.ticker }}</td>
+                    <td class="py-3 px-4 text-gray-400">{{ s.name }}</td>
+                    <td class="py-3 px-4 text-right font-medium
+                        {% if s.nominal_pct >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                        {{ '+' if s.nominal_pct >= 0 else '' }}{{ s.nominal_pct }}%
+                    </td>
+                    <td class="py-3 px-4 text-right text-yellow-400 text-xs">
+                        −{{ s.inflation_rate | round(4) }}%
+                    </td>
+                    <td class="py-3 px-4 text-right font-bold
+                        {% if s.real_return >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                        {{ '+' if s.real_return >= 0 else '' }}{{ s.real_return }}%
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        {% if s.beating_inflation %}
+                        <span class="px-2 py-1 bg-green-900/50 text-green-400 rounded text-xs font-bold">✓ Beating</span>
+                        {% else %}
+                        <span class="px-2 py-1 bg-red-900/50 text-red-400 rounded text-xs font-bold">✗ Lagging</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-gray-500">
+        <p class="text-3xl mb-2">📭</p>
+        <p class="text-sm">No watchlist stocks to analyze.</p>
+        <a href="/watchlist" class="text-green-400 text-sm hover:underline mt-1 block">Add stocks to your watchlist →</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Section 5: Real Returns — Portfolio -->
+<div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+    <h2 class="text-lg font-semibold text-white mb-1">💼 Portfolio — Inflation-Adjusted P&L</h2>
+    <p class="text-gray-500 text-xs mb-4">
+        Your total P&L% on each position minus the annual inflation rate of {{ us_inflation }}%.
+    </p>
+    {% if portfolio_real_returns %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-gray-400 border-b border-gray-800">
+                    <th class="text-left py-3 px-4">Symbol</th>
+                    <th class="text-left py-3 px-4">Name</th>
+                    <th class="text-right py-3 px-4">Nominal P&L %</th>
+                    <th class="text-right py-3 px-4">Inflation Rate</th>
+                    <th class="text-right py-3 px-4">Real Return</th>
+                    <th class="text-center py-3 px-4">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800">
+                {% for p in portfolio_real_returns %}
+                <tr class="hover:bg-gray-800/50 transition">
+                    <td class="py-3 px-4 font-bold text-white">{{ p.ticker }}</td>
+                    <td class="py-3 px-4 text-gray-400">{{ p.name }}</td>
+                    <td class="py-3 px-4 text-right font-medium
+                        {% if p.nominal_pct >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                        {{ '+' if p.nominal_pct >= 0 else '' }}{{ p.nominal_pct }}%
+                    </td>
+                    <td class="py-3 px-4 text-right text-yellow-400 text-xs">
+                        −{{ p.inflation_rate }}%
+                    </td>
+                    <td class="py-3 px-4 text-right font-bold
+                        {% if p.real_return >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                        {{ '+' if p.real_return >= 0 else '' }}{{ p.real_return }}%
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        {% if p.beating_inflation %}
+                        <span class="px-2 py-1 bg-green-900/50 text-green-400 rounded text-xs font-bold">✓ Beating</span>
+                        {% else %}
+                        <span class="px-2 py-1 bg-red-900/50 text-red-400 rounded text-xs font-bold">✗ Lagging</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-gray-500">
+        <p class="text-3xl mb-2">📂</p>
+        <p class="text-sm">No portfolio positions to analyze.</p>
+        <a href="/portfolio" class="text-green-400 text-sm hover:underline mt-1 block">Buy your first stock →</a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
