@@ -37,7 +37,7 @@ async def watchlist_page(
         "user": current_user,
         "stock_data": stock_data,
         "popular_data": popular_data,
-        "watchlist_entries": tickers,
+        "watchlist_tickers": tickers,
     })
 
 

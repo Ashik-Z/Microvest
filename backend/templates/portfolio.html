@@ -31,6 +31,12 @@
     </div>
 </div>
 
+<!-- Two-column layout: main content + watchlist sidebar -->
+<div class="flex flex-col xl:flex-row gap-8">
+
+<!-- Main column -->
+<div class="flex-1 min-w-0">
+
 <!-- Buy Stock Form -->
 <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8" x-data="{ open: false }">
     <div class="flex items-center justify-between cursor-pointer" @click="open = !open">
@@ -132,7 +138,7 @@
     <div class="text-center py-12 text-gray-500">
         <p class="text-4xl mb-3">📂</p>
         <p class="text-lg">No holdings yet.</p>
-        <p class="text-sm mt-1">Use the Buy Stock form above to add your first position.</p>
+        <p class="text-sm mt-1">Head to your <a href="/watchlist" class="text-green-400 hover:underline">Watchlist</a> to find stocks and buy your first position.</p>
     </div>
     {% endif %}
 </div>
@@ -183,6 +189,74 @@
         <p>No transactions yet.</p>
     </div>
     {% endif %}
+</div>
+
+<!-- end main column -->
+</div>
+
+<!-- Watchlist Sidebar -->
+<div class="xl:w-72 shrink-0">
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 sticky top-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-base font-semibold text-white">Your Watchlist</h2>
+            <a href="/watchlist" class="text-green-400 text-xs hover:underline">Manage →</a>
+        </div>
+
+        {% if watchlist_data %}
+        <div class="space-y-1">
+            {% for stock in watchlist_data %}
+            <div class="relative py-2 border-b border-gray-800 last:border-0" x-data="{ open: false }">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-bold text-white text-sm">{{ stock.ticker }}</p>
+                        <p class="text-gray-500 text-xs truncate max-w-[120px]">{{ stock.name }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-white text-sm font-medium">${{ stock.price }}</p>
+                        <p class="text-xs font-medium
+                            {% if stock.change_pct >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                            {{ '+' if stock.change_pct >= 0 else '' }}{{ stock.change_pct }}%
+                        </p>
+                    </div>
+                </div>
+                <button type="button" @click="open = !open"
+                    class="mt-1 w-full text-center text-green-400 hover:text-green-300 text-xs font-semibold transition">
+                    + Quick Buy
+                </button>
+                <div x-show="open" x-transition @click.outside="open = false"
+                    class="absolute left-0 right-0 z-20 bg-gray-800 border border-gray-700 rounded-xl p-3 shadow-xl mt-1">
+                    <p class="text-white text-xs font-semibold mb-2">Buy {{ stock.ticker }} <span class="text-gray-400">@ ${{ stock.price }}</span></p>
+                    <form method="POST" action="/portfolio/buy" class="flex gap-2">
+                        <input type="hidden" name="ticker" value="{{ stock.ticker }}">
+                        <input
+                            type="number"
+                            name="qty"
+                            required
+                            min="0.0001"
+                            step="any"
+                            placeholder="Qty"
+                            class="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-green-500"
+                        >
+                        <button type="submit"
+                            class="bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-3 py-1 rounded transition">
+                            Buy
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-8 text-gray-500">
+            <p class="text-2xl mb-2">📭</p>
+            <p class="text-xs">No stocks in your watchlist.</p>
+            <a href="/watchlist" class="text-green-400 text-xs hover:underline mt-1 block">Add stocks →</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- end two-column layout -->
 </div>
 
 {% endblock %}

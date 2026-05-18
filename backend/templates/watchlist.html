@@ -70,13 +70,42 @@
                     <td class="py-3 px-4 text-right text-gray-300">${{ stock.low }}</td>
                     <td class="py-3 px-4 text-right text-gray-400">{{ stock.volume }}</td>
                     <td class="py-3 px-4 text-center">
-                        <form method="POST" action="/watchlist/remove">
-                            <input type="hidden" name="ticker" value="{{ stock.ticker }}">
-                            <button type="submit"
-                                class="text-red-400 hover:text-red-300 text-xs font-semibold transition">
-                                Remove
+                        <div class="relative flex items-center justify-center gap-3" x-data="{ open: false }">
+                            <!-- Buy trigger -->
+                            <button type="button" @click="open = !open"
+                                class="text-green-400 hover:text-green-300 text-xs font-semibold transition">
+                                Buy
                             </button>
-                        </form>
+                            <!-- Remove -->
+                            <form method="POST" action="/watchlist/remove">
+                                <input type="hidden" name="ticker" value="{{ stock.ticker }}">
+                                <button type="submit"
+                                    class="text-red-400 hover:text-red-300 text-xs font-semibold transition">
+                                    Remove
+                                </button>
+                            </form>
+                            <!-- Inline buy popover (toggled by Alpine) -->
+                            <div x-show="open" x-transition @click.outside="open = false"
+                                class="absolute right-0 top-6 z-20 bg-gray-800 border border-gray-700 rounded-xl p-4 shadow-xl w-52">
+                                <p class="text-white text-xs font-semibold mb-2">Buy {{ stock.ticker }} <span class="text-gray-400">@ ${{ stock.price }}</span></p>
+                                <form method="POST" action="/portfolio/buy" class="flex gap-2">
+                                    <input type="hidden" name="ticker" value="{{ stock.ticker }}">
+                                    <input
+                                        type="number"
+                                        name="qty"
+                                        required
+                                        min="0.0001"
+                                        step="any"
+                                        placeholder="Qty"
+                                        class="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-green-500"
+                                    >
+                                    <button type="submit"
+                                        class="bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-3 py-1 rounded transition">
+                                        Buy
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -124,17 +153,44 @@
                         {{ '+' if stock.change_pct >= 0 else '' }}{{ stock.change_pct }}%
                     </td>
                     <td class="py-3 px-4 text-center">
-                        {% if stock.ticker in watchlist_tickers %}
-                        <span class="text-green-400 text-xs font-semibold">✓ Added</span>
-                        {% else %}
-                        <form method="POST" action="/watchlist/add">
-                            <input type="hidden" name="ticker" value="{{ stock.ticker }}">
-                            <button type="submit"
-                                class="text-blue-400 hover:text-blue-300 text-xs font-semibold transition">
-                                + Add
+                        <div class="relative flex items-center justify-center gap-3" x-data="{ open: false }">
+                            {% if stock.ticker in watchlist_tickers %}
+                            <span class="text-green-400 text-xs font-semibold">✓ Watching</span>
+                            {% else %}
+                            <form method="POST" action="/watchlist/add">
+                                <input type="hidden" name="ticker" value="{{ stock.ticker }}">
+                                <button type="submit"
+                                    class="text-blue-400 hover:text-blue-300 text-xs font-semibold transition">
+                                    + Watch
+                                </button>
+                            </form>
+                            {% endif %}
+                            <!-- Buy popover -->
+                            <button type="button" @click="open = !open"
+                                class="text-green-400 hover:text-green-300 text-xs font-semibold transition">
+                                Buy
                             </button>
-                        </form>
-                        {% endif %}
+                            <div x-show="open" x-transition @click.outside="open = false"
+                                class="absolute right-0 top-6 z-20 bg-gray-800 border border-gray-700 rounded-xl p-4 shadow-xl w-52">
+                                <p class="text-white text-xs font-semibold mb-2">Buy {{ stock.ticker }} <span class="text-gray-400">@ ${{ stock.price }}</span></p>
+                                <form method="POST" action="/portfolio/buy" class="flex gap-2">
+                                    <input type="hidden" name="ticker" value="{{ stock.ticker }}">
+                                    <input
+                                        type="number"
+                                        name="qty"
+                                        required
+                                        min="0.0001"
+                                        step="any"
+                                        placeholder="Qty"
+                                        class="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-green-500"
+                                    >
+                                    <button type="submit"
+                                        class="bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-3 py-1 rounded transition">
+                                        Buy
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}

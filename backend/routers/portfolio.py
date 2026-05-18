@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.dependencies import get_current_user
-from backend.models import User, Transaction, TransactionType
+from backend.models import User, Transaction, TransactionType, Watchlist
 from backend.services.stock_service import fetch_stock_data, fetch_multiple
 
 router = APIRouter(tags=["portfolio"])
@@ -91,6 +91,15 @@ async def portfolio_page(
         .all()
     )
 
+    watchlist_entries = (
+        db.query(Watchlist)
+        .filter(Watchlist.user_id == current_user.id)
+        .order_by(Watchlist.added_at.desc())
+        .all()
+    )
+    watchlist_tickers = [e.ticker for e in watchlist_entries]
+    watchlist_data = fetch_multiple(watchlist_tickers)
+
     return templates.TemplateResponse("portfolio.html", {
         "request": request,
         "user": current_user,
@@ -100,6 +109,7 @@ async def portfolio_page(
         "total_pnl": round(total_pnl, 2),
         "total_pnl_pct": round(total_pnl_pct, 2),
         "recent_transactions": recent_transactions,
+        "watchlist_data": watchlist_data,
     })
 
 
