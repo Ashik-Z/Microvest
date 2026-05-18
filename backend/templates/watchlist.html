@@ -86,21 +86,18 @@
                             </form>
                             <!-- Inline buy popover (toggled by Alpine) -->
                             <div x-show="open" x-transition @click.outside="open = false"
-                                class="absolute right-0 top-6 z-20 bg-gray-800 border border-gray-700 rounded-xl p-4 shadow-xl w-52">
+                                class="absolute left-0 right-0 z-20 bg-gray-800 border border-gray-700 rounded-xl p-3 shadow-xl w-44">
                                 <p class="text-white text-xs font-semibold mb-2">Buy {{ stock.ticker }} <span class="text-gray-400">@ ${{ stock.price }}</span></p>
                                 <form method="POST" action="/portfolio/buy" class="flex gap-2">
                                     <input type="hidden" name="ticker" value="{{ stock.ticker }}">
                                     <input
                                         type="number"
                                         name="qty"
-                                        required
-                                        min="0.0001"
-                                        step="any"
                                         placeholder="Qty"
-                                        class="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-green-500"
+                                        class="w-1/2 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-green-500"
                                     >
                                     <button type="submit"
-                                        class="bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-3 py-1 rounded transition">
+                                        class="w-1/2 bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-3 py-1 rounded transition">
                                         Buy
                                     </button>
                                 </form>
@@ -171,9 +168,9 @@
                                 Buy
                             </button>
                             <div x-show="open" x-transition @click.outside="open = false"
-                                class="absolute right-0 top-6 z-20 bg-gray-800 border border-gray-700 rounded-xl p-4 shadow-xl w-52">
-                                <p class="text-white text-xs font-semibold mb-2">Buy {{ stock.ticker }} <span class="text-gray-400">@ ${{ stock.price }}</span></p>
-                                <form method="POST" action="/portfolio/buy" class="flex gap-2">
+                                class="absolute left-0 right-0 z-20 bg-gray-800 border border-gray-700 rounded-xl p-3 shadow-xl w-52">
+                                <p class="text-white text-xs font-semibold mb-3">Buy {{ stock.ticker }} <span class="text-gray-400">@ ${{ stock.price }}</span></p>
+                                <form method="POST" action="/portfolio/buy" class="flex flex-col gap-2">
                                     <input type="hidden" name="ticker" value="{{ stock.ticker }}">
                                     <input
                                         type="number"
@@ -182,10 +179,10 @@
                                         min="0.0001"
                                         step="any"
                                         placeholder="Qty"
-                                        class="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-green-500"
+                                        class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white text-xs focus:outline-none focus:border-green-500"
                                     >
                                     <button type="submit"
-                                        class="bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-3 py-1 rounded transition">
+                                        class="w-full bg-green-500 hover:bg-green-400 text-black text-xs font-bold py-2 rounded transition">
                                         Buy
                                     </button>
                                 </form>
