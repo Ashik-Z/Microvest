@@ -1,6 +1,6 @@
 # Microvest
 
-▶️ [Watch Demo](https://youtu.be/XRfrx1ykV18)
+▶️ [Watch Demo](https://youtu.be/68NyIMsJibA)
 
 A stock watchlist and portfolio tracker built with FastAPI, SQLAlchemy, MySQL, and Tailwind CSS.
 
